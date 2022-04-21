@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:slumshop/views/mainscreen.dart';
+import 'package:slumshop_admin/views/loginscreen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -13,7 +13,9 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'SlumShop Admin',
-      theme: ThemeData(primarySwatch: Colors.red),
+      theme: ThemeData(
+        primarySwatch: Colors.red
+      ),
       home: const MySplashScreen(title: 'SlumShop Admin'),
     );
   }
@@ -34,7 +36,7 @@ class _MySplashScreenState extends State<MySplashScreen> {
     Timer(
         const Duration(seconds: 3),
         () => Navigator.pushReplacement(context,
-            MaterialPageRoute(builder: (content) => const MainScreen())));
+            MaterialPageRoute(builder: (content) => const LoginScreen())));
   }
 
   @override
