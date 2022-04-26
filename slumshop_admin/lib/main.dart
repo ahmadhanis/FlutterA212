@@ -44,29 +44,31 @@ class _MySplashScreenState extends State<MySplashScreen> {
     screenHeight = MediaQuery.of(context).size.height;
     screenWidth = MediaQuery.of(context).size.width;
     return Scaffold(
-      body: SafeArea(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(64.0),
-              child: Image.asset('assets/images/1.png'),
-            ),
-            const Text(
-              "SlumShop (Admin)",
-              style: TextStyle(
-                fontSize: 40,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
+      body: Center(
+        child: SafeArea(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(64.0),
+                child: Image.asset('assets/images/1.png'),
               ),
-            ),
-            const CircularProgressIndicator(),
-            const Text("Version 0.1",
+              const Text(
+                "SlumShop (Admin)",
                 style: TextStyle(
-                  fontSize: 16,
+                  fontSize: 40,
                   fontWeight: FontWeight.bold,
-                )),
-          ],
+                  color: Colors.white,
+                ),
+              ),
+              const CircularProgressIndicator(),
+              const Text("Version 0.1",
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  )),
+            ],
+          ),
         ),
       ),
     );

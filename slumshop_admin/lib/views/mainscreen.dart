@@ -1,7 +1,14 @@
 import 'package:flutter/material.dart';
 
+import '../models/admin.dart';
+import 'newproduct.dart';
+
 class MainScreen extends StatefulWidget {
-  const MainScreen({Key? key}) : super(key: key);
+  final Admin admin;
+  const MainScreen({
+    Key? key,
+    required this.admin,
+  }) : super(key: key);
 
   @override
   State<MainScreen> createState() => _MainScreenState();
@@ -17,27 +24,48 @@ class _MainScreenState extends State<MainScreen> {
       drawer: Drawer(
         child: ListView(
           children: [
-            const UserAccountsDrawerHeader(
-              accountName: Text("Ahmad Hanis"),
-              accountEmail: Text("slumberjer@gmail.com"),
+            UserAccountsDrawerHeader(
+              accountName: Text(widget.admin.name.toString()),
+              accountEmail: Text(widget.admin.email.toString()),
+              
               currentAccountPicture: CircleAvatar(
                 backgroundImage: NetworkImage(
                     "https://cdn.myanimelist.net/r/360x360/images/characters/9/310307.jpg?s=56335bffa6f5da78c3824ba0dae14a26"),
               ),
             ),
+             _createDrawerItem(
+              icon: Icons.tv,
+              text: 'My Dashboard',
+              onTap: () {},
+            ),
             _createDrawerItem(
-              icon: Icons.list_alt_outlined,
+              icon: Icons.list_alt,
               text: 'My Products',
               onTap: () {},
             ),
             _createDrawerItem(
-              icon: Icons.local_shipping,
+              icon: Icons.local_shipping_outlined,
               text: 'My Orders',
+              onTap: () {},
+            ),
+            _createDrawerItem(
+              icon: Icons.supervised_user_circle,
+              text: 'My Customer',
               onTap: () {},
             ),
             _createDrawerItem(
               icon: Icons.verified_user,
               text: 'My Profile',
+              onTap: () {},
+            ),
+            _createDrawerItem(
+              icon: Icons.file_copy,
+              text: 'My Report',
+              onTap: () {},
+            ),
+            _createDrawerItem(
+              icon: Icons.exit_to_app,
+              text: 'Logout',
               onTap: () {},
             ),
           ],
@@ -49,7 +77,10 @@ class _MainScreenState extends State<MainScreen> {
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.add),
         tooltip: "New Product",
-        onPressed: () {},
+        onPressed: () {
+          Navigator.push(context,
+              MaterialPageRoute(builder: (content) => const NewProduct()));
+        },
       ),
     );
   }
