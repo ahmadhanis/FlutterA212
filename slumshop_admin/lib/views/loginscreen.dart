@@ -106,7 +106,12 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       Row(
                         children: [
-                          Checkbox(value: remember, onChanged: _onRememberMe),
+                          Checkbox(
+                            value: remember,
+                            onChanged: (bool? value) {
+                              _onRememberMeChanged(value!);
+                            },
+                          ),
                           const Text("Remember Me")
                         ],
                       ),
@@ -169,10 +174,10 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  void _onRememberMe(bool? value) {
-    remember = value!;
+  void _onRememberMeChanged(bool value) {
+    remember = value;
     setState(() {
-      if (value!) {
+      if (remember) {
         _saveRemovePref(true);
       } else {
         _saveRemovePref(false);
@@ -203,26 +208,29 @@ class _LoginScreenState extends State<LoginScreen> {
       http.post(
           Uri.parse(CONSTANTS.server + "/slumshop/mobile/php/login_user.php"),
           body: {"email": _email, "password": _password}).then((response) {
-        print(response.body);
         var data = jsonDecode(response.body);
         if (response.statusCode == 200 && data['status'] == 'success') {
-          String name = data['data']['name'];
-          String email = data['data']['email'];
-          String id = data['data']['id'];
-          String datereg = data['data']['datereg'];
-          String role = data['data']['role'];
+          Admin admin = Admin.fromJson(data['data']);
+          // String name = data['data']['name'];
+          // String email = data['data']['email'];
+          // String id = data['data']['id'];
+          // String datereg = data['data']['datereg'];
+          // String role = data['data']['role'];
+          // Admin admin = Admin(
+          //     name: name, email: email, id: id, role: role, datereg: datereg);
 
-          Admin admin = Admin(name:name,email: email,id:id,role: role,datereg: datereg );
-
-          
           Fluttertoast.showToast(
               msg: "Success",
               toastLength: Toast.LENGTH_SHORT,
               gravity: ToastGravity.BOTTOM,
               timeInSecForIosWeb: 1,
               fontSize: 16.0);
-          Navigator.pushReplacement(context,
-              MaterialPageRoute(builder: (content) => MainScreen(admin: admin,)));
+          Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                  builder: (content) => MainScreen(
+                        admin: admin,
+                      )));
         } else {
           Fluttertoast.showToast(
               msg: "Failed",

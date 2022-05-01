@@ -1,6 +1,8 @@
 <?php
 if (!isset($_POST)) {
-    echo "failed";
+    $response = array('status' => 'failed', 'data' => null);
+    sendJsonResponse($response);
+    die();
 }
 
 include_once("dbconnect.php");

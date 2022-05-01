@@ -16,12 +16,12 @@ class Admin {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['id'] = this.id;
-    data['name'] = this.name;
-    data['email'] = this.email;
-    data['role'] = this.role;
-    data['datereg'] = this.datereg;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['id'] = id;
+    data['name'] = name;
+    data['email'] = email;
+    data['role'] = role;
+    data['datereg'] = datereg;
     return data;
   }
 }

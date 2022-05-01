@@ -32,6 +32,8 @@ dependencies:
     sdk: flutter
   fluttertoast: ^8.0.9
   http: ^0.13.4
+  image_cropper: ^1.4.1
+  image_picker: ^0.8.5
   shared_preferences: ^2.0.13
 
 dev_dependencies:
