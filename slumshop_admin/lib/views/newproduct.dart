@@ -35,9 +35,13 @@ class _NewProductState extends State<NewProduct> {
     'Bread',
     'Canned Food',
     'Condiment',
+    'Care Product',
     'Dairy',
+    'Dried Food',
+    'Snack',
     'Meat',
-    'Produce'
+    'Produce',
+    'Household',
   ];
 
   @override
@@ -214,6 +218,7 @@ class _NewProductState extends State<NewProduct> {
                     child: TextFormField(
                       keyboardType: TextInputType.number,
                       controller: _prbarcodeEditingController,
+                      maxLength: 12,
                       decoration: InputDecoration(
                           labelText: 'Barcode',
                           prefixIcon: const Icon(Icons.qr_code),

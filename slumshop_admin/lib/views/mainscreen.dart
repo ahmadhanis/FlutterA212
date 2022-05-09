@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../models/admin.dart';
 import 'newproduct.dart';
+import 'productscreen.dart';
 
 class MainScreen extends StatefulWidget {
   final Admin admin;
@@ -19,7 +20,7 @@ class _MainScreenState extends State<MainScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('SlumShop'),
+        title: const Text('My Dashboard'),
       ),
       drawer: Drawer(
         child: ListView(
@@ -27,21 +28,36 @@ class _MainScreenState extends State<MainScreen> {
             UserAccountsDrawerHeader(
               accountName: Text(widget.admin.name.toString()),
               accountEmail: Text(widget.admin.email.toString()),
-              
-              currentAccountPicture: CircleAvatar(
+              currentAccountPicture: const CircleAvatar(
                 backgroundImage: NetworkImage(
                     "https://cdn.myanimelist.net/r/360x360/images/characters/9/310307.jpg?s=56335bffa6f5da78c3824ba0dae14a26"),
               ),
             ),
-             _createDrawerItem(
+            _createDrawerItem(
               icon: Icons.tv,
               text: 'My Dashboard',
-              onTap: () {},
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (content) => MainScreen(
+                              admin: widget.admin,
+                            )));
+              },
             ),
             _createDrawerItem(
               icon: Icons.list_alt,
               text: 'My Products',
-              onTap: () {},
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (content) => ProductScreen(
+                              admin: widget.admin,
+                            )));
+              },
             ),
             _createDrawerItem(
               icon: Icons.local_shipping_outlined,
@@ -73,14 +89,6 @@ class _MainScreenState extends State<MainScreen> {
       ),
       body: const Center(
         child: Text('Hello World'),
-      ),
-      floatingActionButton: FloatingActionButton(
-        child: const Icon(Icons.add),
-        tooltip: "New Product",
-        onPressed: () {
-          Navigator.push(context,
-              MaterialPageRoute(builder: (content) => const NewProduct()));
-        },
       ),
     );
   }
