@@ -9,6 +9,9 @@ import '../constants.dart';
 import '../models/admin.dart';
 import '../models/product.dart';
 import 'mainscreen.dart';
+import 'package:intl/intl.dart';
+
+import 'updprscreen.dart';
 
 class ProductScreen extends StatefulWidget {
   final Admin admin;
@@ -22,6 +25,9 @@ class _ProductScreenState extends State<ProductScreen> {
   List<Product> productList = <Product>[];
   String titlecenter = "No Product Available";
   late double screenHeight, screenWidth, resWidth;
+  final df = DateFormat('dd/MM/yyyy hh:mm a');
+  var _tapPosition;
+
   @override
   void initState() {
     super.initState();
@@ -59,7 +65,7 @@ class _ProductScreenState extends State<ProductScreen> {
               text: 'My Dashboard',
               onTap: () {
                 Navigator.pop(context);
-                Navigator.push(
+                Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(
                         builder: (content) => MainScreen(
@@ -72,7 +78,7 @@ class _ProductScreenState extends State<ProductScreen> {
               text: 'My Products',
               onTap: () {
                 Navigator.pop(context);
-                Navigator.push(
+                Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(
                         builder: (content) => ProductScreen(
@@ -124,42 +130,64 @@ class _ProductScreenState extends State<ProductScreen> {
                 Expanded(
                     child: GridView.count(
                         crossAxisCount: 2,
+                        childAspectRatio: (1 / 1),
                         children: List.generate(productList.length, (index) {
-                          return Card(
-                              child: Column(
-                            children: [
-                              Flexible(
-                                flex: 7,
-                                child: CachedNetworkImage(
-                                  imageUrl: CONSTANTS.server +
-                                      "/slumshop/mobile/assets/products/" +
-                                      productList[index].productId.toString() +
-                                      '.jpg',
-                                  fit: BoxFit.cover,
-                                  width: resWidth,
-                                  placeholder: (context, url) =>
-                                      const CircularProgressIndicator(),
-                                  errorWidget: (context, url, error) =>
-                                      const Icon(Icons.error),
+                          return InkWell(
+                            splashColor: Colors.amber,
+                            onTap: () => {_loadProductDetails(index)},
+                            onLongPress: () => {
+                              _delUpdMenu(index),
+                            },
+                            onTapDown: _storePosition,
+                            child: Card(
+                                child: Column(
+                              children: [
+                                Flexible(
+                                  flex: 6,
+                                  child: CachedNetworkImage(
+                                    imageUrl: CONSTANTS.server +
+                                        "/slumshop/mobile/assets/products/" +
+                                        productList[index]
+                                            .productId
+                                            .toString() +
+                                        '.jpg',
+                                    fit: BoxFit.cover,
+                                    width: resWidth,
+                                    placeholder: (context, url) =>
+                                        const LinearProgressIndicator(),
+                                    errorWidget: (context, url, error) =>
+                                        const Icon(Icons.error),
+                                  ),
                                 ),
-                              ),
-                              Flexible(
-                                  flex: 3,
-                                  child: Column(
-                                    children: [
-                                      Text(productList[index]
-                                          .productName
-                                          .toString()),
-                                      Text("RM " +
-                                          double.parse(productList[index]
-                                                  .productPrice
-                                                  .toString())
-                                              .toStringAsFixed(2)),
-                                              
-                                    ],
-                                  ))
-                            ],
-                          ));
+                                Flexible(
+                                    flex: 4,
+                                    child: Column(
+                                      children: [
+                                        Text(
+                                          productList[index]
+                                              .productName
+                                              .toString(),
+                                          style: const TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                        Text("RM " +
+                                            double.parse(productList[index]
+                                                    .productPrice
+                                                    .toString())
+                                                .toStringAsFixed(2)),
+                                        Text(productList[index]
+                                                .productQty
+                                                .toString() +
+                                            " units"),
+                                        Text(productList[index]
+                                            .productStatus
+                                            .toString()),
+                                      ],
+                                    ))
+                              ],
+                            )),
+                          );
                         })))
               ],
             ),
@@ -206,6 +234,179 @@ class _ProductScreenState extends State<ProductScreen> {
           });
           setState(() {});
         }
+      }
+    });
+  }
+
+  _loadProductDetails(int index) {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(20.0))),
+            title: const Text(
+              "Product Details",
+              style: TextStyle(),
+            ),
+            content: SingleChildScrollView(
+                child: Column(
+              children: [
+                CachedNetworkImage(
+                  imageUrl: CONSTANTS.server +
+                      "/slumshop/mobile/assets/products/" +
+                      productList[index].productId.toString() +
+                      '.jpg',
+                  fit: BoxFit.cover,
+                  width: resWidth,
+                  placeholder: (context, url) =>
+                      const LinearProgressIndicator(),
+                  errorWidget: (context, url, error) => const Icon(Icons.error),
+                ),
+                Text(
+                  productList[index].productName.toString(),
+                  style: const TextStyle(
+                      fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Text("Product Description: \n" +
+                      productList[index].productDesc.toString()),
+                  Text("Price: RM " +
+                      double.parse(productList[index].productPrice.toString())
+                          .toStringAsFixed(2)),
+                  Text("Quantity Available: " +
+                      productList[index].productQty.toString() +
+                      " units"),
+                  Text("Product Status: " +
+                      productList[index].productStatus.toString()),
+                  Text("Product Date: " +
+                      df.format(DateTime.parse(
+                          productList[index].productDate.toString()))),
+                ])
+              ],
+            )),
+            actions: [
+              TextButton(
+                child: const Text(
+                  "Close",
+                  style: TextStyle(),
+                ),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        });
+  }
+
+  void _storePosition(TapDownDetails details) {
+    _tapPosition = details.globalPosition;
+  }
+
+  _delUpdMenu(int index) async {
+    final RenderObject? overlay =
+        Overlay.of(context)!.context.findRenderObject();
+    showMenu(
+      context: context,
+      items: [
+        PopupMenuItem(
+          child: GestureDetector(
+              onTap: () => {
+                    Navigator.of(context).pop(),
+                    Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (content) => UpdateProductScreen(
+                              product: productList[index],
+                            )))
+                  },
+              child: const Text(
+                "Update Product",
+                style: TextStyle(),
+              )),
+        ),
+        PopupMenuItem(
+          child: GestureDetector(
+              onTap: () => {
+                    Navigator.of(context).pop(),
+                    _deleteProductDialog(index),
+                  },
+              child: const Text(
+                "Delete Product",
+                style: TextStyle(),
+              )),
+        ),
+      ],
+      position: RelativeRect.fromRect(
+        _tapPosition & Size(40, 40), // smaller rect, the touch area
+        Offset.zero & Size(40, 40), // Bigger rect, the entire screen
+      ),
+    );
+  }
+
+  _deleteProductDialog(int index) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        // return object of type Dialog
+        return AlertDialog(
+          title: Text(
+            "Delete " + productList[index].productName.toString(),
+            style: const TextStyle(),
+          ),
+          content: const Text(
+            "Are you sure?",
+            style: TextStyle(),
+          ),
+          actions: <Widget>[
+            // usually buttons at the bottom of the dialog
+            TextButton(
+              child: const Text(
+                "Yes",
+                style: TextStyle(),
+              ),
+              onPressed: () {
+                Navigator.of(context).pop();
+                _deleteProduct(index);
+              },
+            ),
+            TextButton(
+              child: const Text(
+                "No",
+                style: TextStyle(),
+              ),
+              onPressed: () {
+                Navigator.of(context).pop();
+                
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _deleteProduct(int index) {
+    http.post(
+        Uri.parse(CONSTANTS.server + "/slumshop/mobile/php/delete_product.php"),
+        body: {"prodid": productList[index].productId}).then((response) {
+      var jsondata = jsonDecode(response.body);
+      if (response.statusCode == 200 && jsondata['status'] == 'success') {
+        Fluttertoast.showToast(
+            msg: "Success",
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.BOTTOM,
+            timeInSecForIosWeb: 1,
+            fontSize: 16.0);
+            _loadProducts();
+      }else{
+         Fluttertoast.showToast(
+            msg: "Failed",
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.BOTTOM,
+            timeInSecForIosWeb: 1,
+            fontSize: 16.0);
       }
     });
   }

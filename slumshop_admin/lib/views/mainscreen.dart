@@ -38,7 +38,7 @@ class _MainScreenState extends State<MainScreen> {
               text: 'My Dashboard',
               onTap: () {
                 Navigator.pop(context);
-                Navigator.push(
+                Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(
                         builder: (content) => MainScreen(
@@ -51,7 +51,7 @@ class _MainScreenState extends State<MainScreen> {
               text: 'My Products',
               onTap: () {
                 Navigator.pop(context);
-                Navigator.push(
+                Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(
                         builder: (content) => ProductScreen(

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:slumshop_admin/views/loginscreen.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 void main() {
   runApp(const MyApp());
@@ -14,7 +15,11 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'SlumShop Admin',
       theme: ThemeData(
-        primarySwatch: Colors.red
+        primarySwatch: Colors.red,
+        textTheme: GoogleFonts.latoTextTheme(
+          Theme.of(context)
+              .textTheme, // If this is not set, then ThemeData.light().textTheme is used.
+        ),
       ),
       home: const MySplashScreen(title: 'SlumShop Admin'),
     );

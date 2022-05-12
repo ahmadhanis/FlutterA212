@@ -5,7 +5,7 @@ import 'package:image_cropper/image_cropper.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
-
+import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import '../constants.dart';
 
 class NewProduct extends StatefulWidget {
@@ -221,7 +221,22 @@ class _NewProductState extends State<NewProduct> {
                       maxLength: 12,
                       decoration: InputDecoration(
                           labelText: 'Barcode',
-                          prefixIcon: const Icon(Icons.qr_code),
+                          prefixIcon: IconButton(
+                            icon: const Icon(Icons.qr_code),
+                            onPressed: () async {
+                              String barcodeScanRes =
+                                  await FlutterBarcodeScanner.scanBarcode(
+                                      "#ff6666",
+                                      "Cancel",
+                                      false,
+                                      ScanMode.DEFAULT);
+                              setState(() {
+                                _prbarcodeEditingController.text =
+                                    barcodeScanRes;
+                              });
+                            },
+                          ),
+                          counterText: "",
                           border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(5.0))),
                       validator: (value) {
@@ -403,7 +418,7 @@ class _NewProductState extends State<NewProduct> {
             timeInSecForIosWeb: 1,
             fontSize: 16.0);
         Navigator.of(context).pop();
-      }else{
+      } else {
         Fluttertoast.showToast(
             msg: data['status'],
             toastLength: Toast.LENGTH_SHORT,
