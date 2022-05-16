@@ -305,22 +305,23 @@ class _ProductScreenState extends State<ProductScreen> {
   }
 
   _delUpdMenu(int index) async {
-    final RenderObject? overlay =
-        Overlay.of(context)!.context.findRenderObject();
+    RenderBox renderBox = context.findRenderObject()! as RenderBox;
+
     showMenu(
       context: context,
       items: [
         PopupMenuItem(
           child: GestureDetector(
-              onTap: () => {
-                    Navigator.of(context).pop(),
-                    Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (content) => UpdateProductScreen(
-                              product: productList[index],
-                            )))
-                  },
+              onTap:() async {
+                Navigator.of(context).pop();
+                   await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (content) => UpdateProductScreen(
+                                  product: productList[index],
+                                )));
+                                _loadProducts();
+              },
               child: const Text(
                 "Update Product",
                 style: TextStyle(),
@@ -339,8 +340,8 @@ class _ProductScreenState extends State<ProductScreen> {
         ),
       ],
       position: RelativeRect.fromRect(
-        _tapPosition & Size(40, 40), // smaller rect, the touch area
-        Offset.zero & Size(40, 40), // Bigger rect, the entire screen
+        _tapPosition & const Size(40, 40), // smaller rect, the touch area
+        Offset.zero & renderBox.size, // Bigger rect, the entire screen
       ),
     );
   }
@@ -378,7 +379,6 @@ class _ProductScreenState extends State<ProductScreen> {
               ),
               onPressed: () {
                 Navigator.of(context).pop();
-                
               },
             ),
           ],
@@ -399,9 +399,9 @@ class _ProductScreenState extends State<ProductScreen> {
             gravity: ToastGravity.BOTTOM,
             timeInSecForIosWeb: 1,
             fontSize: 16.0);
-            _loadProducts();
-      }else{
-         Fluttertoast.showToast(
+        _loadProducts();
+      } else {
+        Fluttertoast.showToast(
             msg: "Failed",
             toastLength: Toast.LENGTH_SHORT,
             gravity: ToastGravity.BOTTOM,
