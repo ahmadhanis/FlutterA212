@@ -23,15 +23,17 @@ class ProductScreen extends StatefulWidget {
 
 class _ProductScreenState extends State<ProductScreen> {
   List<Product> productList = <Product>[];
-  String titlecenter = "No Product Available";
+  String titlecenter = "Loading...";
   late double screenHeight, screenWidth, resWidth;
   final df = DateFormat('dd/MM/yyyy hh:mm a');
   var _tapPosition;
+  var numofpage, curpage = 1;
+  var color;
 
   @override
   void initState() {
     super.initState();
-    _loadProducts();
+    _loadProducts(1);
   }
 
   @override
@@ -119,78 +121,98 @@ class _ProductScreenState extends State<ProductScreen> {
               child: Text(titlecenter,
                   style: const TextStyle(
                       fontSize: 22, fontWeight: FontWeight.bold)))
-          : Column(
-              children: [
-                const Padding(
-                  padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
-                  child: Text("Products Available",
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                ),
-                Expanded(
-                    child: GridView.count(
-                        crossAxisCount: 2,
-                        childAspectRatio: (1 / 1),
-                        children: List.generate(productList.length, (index) {
-                          return InkWell(
-                            splashColor: Colors.amber,
-                            onTap: () => {_loadProductDetails(index)},
-                            onLongPress: () => {
-                              _delUpdMenu(index),
-                            },
-                            onTapDown: _storePosition,
-                            child: Card(
-                                child: Column(
-                              children: [
-                                Flexible(
-                                  flex: 6,
-                                  child: CachedNetworkImage(
-                                    imageUrl: CONSTANTS.server +
-                                        "/slumshop/mobile/assets/products/" +
-                                        productList[index]
-                                            .productId
-                                            .toString() +
-                                        '.jpg',
-                                    fit: BoxFit.cover,
-                                    width: resWidth,
-                                    placeholder: (context, url) =>
-                                        const LinearProgressIndicator(),
-                                    errorWidget: (context, url, error) =>
-                                        const Icon(Icons.error),
-                                  ),
+          : Column(children: [
+              const Padding(
+                padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
+                child: Text("Products Available",
+                    style:
+                        TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              ),
+              Expanded(
+                  child: GridView.count(
+                      crossAxisCount: 2,
+                      childAspectRatio: (1 / 1),
+                      children: List.generate(productList.length, (index) {
+                        return InkWell(
+                          splashColor: Colors.amber,
+                          onTap: () => {_loadProductDetails(index)},
+                          onLongPress: () => {
+                            _delUpdMenu(index),
+                          },
+                          onTapDown: _storePosition,
+                          child: Card(
+                              child: Column(
+                            children: [
+                              Flexible(
+                                flex: 6,
+                                child: CachedNetworkImage(
+                                  imageUrl: CONSTANTS.server +
+                                      "/slumshop/mobile/assets/products/" +
+                                      productList[index].productId.toString() +
+                                      '.jpg',
+                                  fit: BoxFit.cover,
+                                  width: resWidth,
+                                  placeholder: (context, url) =>
+                                      const LinearProgressIndicator(),
+                                  errorWidget: (context, url, error) =>
+                                      const Icon(Icons.error),
                                 ),
-                                Flexible(
-                                    flex: 4,
-                                    child: Column(
-                                      children: [
-                                        Text(
-                                          productList[index]
-                                              .productName
-                                              .toString(),
-                                          style: const TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold),
-                                        ),
-                                        Text("RM " +
-                                            double.parse(productList[index]
-                                                    .productPrice
-                                                    .toString())
-                                                .toStringAsFixed(2)),
-                                        Text(productList[index]
-                                                .productQty
-                                                .toString() +
-                                            " units"),
-                                        Text(productList[index]
-                                            .productStatus
-                                            .toString()),
-                                      ],
-                                    ))
-                              ],
-                            )),
-                          );
-                        })))
-              ],
-            ),
+                              ),
+                              Flexible(
+                                  flex: 4,
+                                  child: Column(
+                                    children: [
+                                      Text(
+                                        productList[index]
+                                            .productName
+                                            .toString(),
+                                        style: const TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                      Text("RM " +
+                                          double.parse(productList[index]
+                                                  .productPrice
+                                                  .toString())
+                                              .toStringAsFixed(2)),
+                                      Text(productList[index]
+                                              .productQty
+                                              .toString() +
+                                          " units"),
+                                      Text(productList[index]
+                                          .productStatus
+                                          .toString()),
+                                    ],
+                                  ))
+                            ],
+                          )),
+                        );
+                      }))),
+              SizedBox(
+                height: 30,
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: numofpage,
+                  scrollDirection: Axis.horizontal,
+                  itemBuilder: (context, index) {
+                    if ((curpage-1) == index) {
+                      color = Colors.red;
+                    } else {
+                      color = Colors.black;
+                    }
+                    return SizedBox(
+                      width: 40,
+                      child: TextButton(
+                          onPressed: () => {_loadProducts(index + 1)},
+                          child: Text(
+                            (index + 1).toString(),
+                            style: TextStyle(color: color),
+                          )),
+                    );
+                  },
+                ),
+              ),
+            ]),
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.add),
         tooltip: "New Product",
@@ -220,20 +242,28 @@ class _ProductScreenState extends State<ProductScreen> {
     );
   }
 
-  void _loadProducts() {
+  void _loadProducts(int pageno) {
+    curpage = pageno;
+    numofpage ?? 1;
     http.post(
         Uri.parse(CONSTANTS.server + "/slumshop/mobile/php/load_products.php"),
-        body: {}).then((response) {
+        body: {'pageno': pageno.toString()}).then((response) {
       var jsondata = jsonDecode(response.body);
+
+      print(jsondata);
       if (response.statusCode == 200 && jsondata['status'] == 'success') {
         var extractdata = jsondata['data'];
+        numofpage = int.parse(jsondata['numofpage']);
+
         if (extractdata['products'] != null) {
           productList = <Product>[];
           extractdata['products'].forEach((v) {
             productList.add(Product.fromJson(v));
           });
-          setState(() {});
+        } else {
+          titlecenter = "No Product Available";
         }
+        setState(() {});
       }
     });
   }
@@ -312,15 +342,15 @@ class _ProductScreenState extends State<ProductScreen> {
       items: [
         PopupMenuItem(
           child: GestureDetector(
-              onTap:() async {
+              onTap: () async {
                 Navigator.of(context).pop();
-                   await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (content) => UpdateProductScreen(
-                                  product: productList[index],
-                                )));
-                                _loadProducts();
+                await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (content) => UpdateProductScreen(
+                              product: productList[index],
+                            )));
+                _loadProducts(1);
               },
               child: const Text(
                 "Update Product",
@@ -399,7 +429,7 @@ class _ProductScreenState extends State<ProductScreen> {
             gravity: ToastGravity.BOTTOM,
             timeInSecForIosWeb: 1,
             fontSize: 16.0);
-        _loadProducts();
+        _loadProducts(1);
       } else {
         Fluttertoast.showToast(
             msg: "Failed",
