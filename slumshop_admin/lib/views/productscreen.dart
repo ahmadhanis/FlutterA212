@@ -29,11 +29,27 @@ class _ProductScreenState extends State<ProductScreen> {
   var _tapPosition;
   var numofpage, curpage = 1;
   var color;
+  TextEditingController searchController = TextEditingController();
+  String search = "";
+  String dropdownvalue = 'Beverage';
+  var types = [
+    'Beverage',
+    'Bread',
+    'Canned Food',
+    'Condiment',
+    'Care Product',
+    'Dairy',
+    'Dried Food',
+    'Snack',
+    'Meat',
+    'Produce',
+    'Household',
+  ];
 
   @override
   void initState() {
     super.initState();
-    _loadProducts(1);
+    _loadProducts(1, search);
   }
 
   @override
@@ -50,6 +66,14 @@ class _ProductScreenState extends State<ProductScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('My Product'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.search),
+            onPressed: () {
+              _loadSearchDialog();
+            },
+          )
+        ],
       ),
       drawer: Drawer(
         child: ListView(
@@ -195,7 +219,7 @@ class _ProductScreenState extends State<ProductScreen> {
                   itemCount: numofpage,
                   scrollDirection: Axis.horizontal,
                   itemBuilder: (context, index) {
-                    if ((curpage-1) == index) {
+                    if ((curpage - 1) == index) {
                       color = Colors.red;
                     } else {
                       color = Colors.black;
@@ -203,7 +227,7 @@ class _ProductScreenState extends State<ProductScreen> {
                     return SizedBox(
                       width: 40,
                       child: TextButton(
-                          onPressed: () => {_loadProducts(index + 1)},
+                          onPressed: () => {_loadProducts(index + 1, "")},
                           child: Text(
                             (index + 1).toString(),
                             style: TextStyle(color: color),
@@ -242,12 +266,15 @@ class _ProductScreenState extends State<ProductScreen> {
     );
   }
 
-  void _loadProducts(int pageno) {
+  void _loadProducts(int pageno, String _search) {
     curpage = pageno;
     numofpage ?? 1;
     http.post(
         Uri.parse(CONSTANTS.server + "/slumshop/mobile/php/load_products.php"),
-        body: {'pageno': pageno.toString()}).then((response) {
+        body: {
+          'pageno': pageno.toString(),
+          'search': _search,
+        }).then((response) {
       var jsondata = jsonDecode(response.body);
 
       print(jsondata);
@@ -350,7 +377,7 @@ class _ProductScreenState extends State<ProductScreen> {
                         builder: (content) => UpdateProductScreen(
                               product: productList[index],
                             )));
-                _loadProducts(1);
+                _loadProducts(1, search);
               },
               child: const Text(
                 "Update Product",
@@ -429,7 +456,7 @@ class _ProductScreenState extends State<ProductScreen> {
             gravity: ToastGravity.BOTTOM,
             timeInSecForIosWeb: 1,
             fontSize: 16.0);
-        _loadProducts(1);
+        _loadProducts(1, "");
       } else {
         Fluttertoast.showToast(
             msg: "Failed",
@@ -439,5 +466,71 @@ class _ProductScreenState extends State<ProductScreen> {
             fontSize: 16.0);
       }
     });
+  }
+
+  void _loadSearchDialog() {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          // return object of type Dialog
+          return StatefulBuilder(
+            builder: (context, StateSetter setState) {
+              return AlertDialog(
+                title: const Text(
+                  "Search ",
+                ),
+                content: SizedBox(
+                  height: screenHeight / 3,
+                  child: Column(
+                    children: [
+                      TextField(
+                        controller: searchController,
+                        decoration: InputDecoration(
+                            labelText: 'Search',
+                            border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(5.0))),
+                      ),
+                      const SizedBox(height:5),
+                      Container(
+                        height: 60,
+                        padding: const EdgeInsets.fromLTRB(5, 0, 5, 0),
+                        decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey),
+                            borderRadius:
+                                const BorderRadius.all(Radius.circular(5.0))),
+                        child: DropdownButton(
+                          value: dropdownvalue,
+                          underline: const SizedBox(),
+                          isExpanded: true,
+                          icon: const Icon(Icons.keyboard_arrow_down),
+                          items: types.map((String items) {
+                            return DropdownMenuItem(
+                              value: items,
+                              child: Text(items),
+                            );
+                          }).toList(),
+                          onChanged: (String? newValue) {
+                            setState(() {
+                              dropdownvalue = newValue!;
+                            });
+                          },
+                        ),
+                      ),
+                      ElevatedButton(
+                        onPressed: () {
+                          search = searchController.text;
+                          Navigator.of(context).pop();
+                          _loadProducts(1, search);
+                        },
+                        child: const Text("Search"),
+                      )
+                    ],
+                  ),
+                ),
+                
+              );
+            },
+          );
+        });
   }
 }
