@@ -32,11 +32,20 @@ dependencies:
     sdk: flutter
   google_fonts: ^2.3.1
   http: ^0.13.4
+  flutter_barcode_scanner: ^2.0.0
+  fluttertoast: ^8.0.9
+  image_cropper: ^1.4.1
+  image_picker: ^0.8.5
+  intl: ^0.17.0
+  shared_preferences: ^2.0.13
+  sn_progress_dialog: ^1.0.8
+  cached_network_image: ^3.2.1
 
 dev_dependencies:
   flutter_lints: ^1.0.0
   flutter_test:
     sdk: flutter
+  
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

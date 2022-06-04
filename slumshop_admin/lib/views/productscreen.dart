@@ -32,18 +32,27 @@ class _ProductScreenState extends State<ProductScreen> {
   TextEditingController searchController = TextEditingController();
   String search = "";
   String dropdownvalue = 'Beverage';
-  var types = [
+   var types = [
+    'Baby',
     'Beverage',
     'Bread',
+    'Breakfast',
     'Canned Food',
     'Condiment',
     'Care Product',
     'Dairy',
     'Dried Food',
+    'Grains',
+    'Frozen',
     'Snack',
+    'Health',
     'Meat',
+    'Miscellaneous',
+    'Seafood',
+    'Pet',
     'Produce',
     'Household',
+    'Vegetables',
   ];
 
   @override
@@ -171,7 +180,7 @@ class _ProductScreenState extends State<ProductScreen> {
                                 flex: 6,
                                 child: CachedNetworkImage(
                                   imageUrl: CONSTANTS.server +
-                                      "/slumshop/mobile/assets/products/" +
+                                      "/slumshop/assets/products/" +
                                       productList[index].productId.toString() +
                                       '.jpg',
                                   fit: BoxFit.cover,
@@ -240,9 +249,10 @@ class _ProductScreenState extends State<ProductScreen> {
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.add),
         tooltip: "New Product",
-        onPressed: () {
-          Navigator.push(context,
+        onPressed: () async {
+          await Navigator.push(context,
               MaterialPageRoute(builder: (content) => const NewProduct()));
+          _loadProducts(1, '');
         },
       ),
     );
@@ -274,7 +284,13 @@ class _ProductScreenState extends State<ProductScreen> {
         body: {
           'pageno': pageno.toString(),
           'search': _search,
-        }).then((response) {
+        }).timeout(
+      const Duration(seconds: 5),
+      onTimeout: () {
+        return http.Response(
+            'Error', 408); // Request Timeout response status code
+      },
+    ).then((response) {
       var jsondata = jsonDecode(response.body);
 
       print(jsondata);
@@ -291,6 +307,8 @@ class _ProductScreenState extends State<ProductScreen> {
           titlecenter = "No Product Available";
         }
         setState(() {});
+      }else{
+        //do something
       }
     });
   }
@@ -311,7 +329,7 @@ class _ProductScreenState extends State<ProductScreen> {
               children: [
                 CachedNetworkImage(
                   imageUrl: CONSTANTS.server +
-                      "/slumshop/mobile/assets/products/" +
+                      "/slumshop/assets/products/" +
                       productList[index].productId.toString() +
                       '.jpg',
                   fit: BoxFit.cover,
@@ -490,7 +508,7 @@ class _ProductScreenState extends State<ProductScreen> {
                             border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(5.0))),
                       ),
-                      const SizedBox(height:5),
+                      const SizedBox(height: 5),
                       Container(
                         height: 60,
                         padding: const EdgeInsets.fromLTRB(5, 0, 5, 0),
@@ -527,7 +545,6 @@ class _ProductScreenState extends State<ProductScreen> {
                     ],
                   ),
                 ),
-                
               );
             },
           );

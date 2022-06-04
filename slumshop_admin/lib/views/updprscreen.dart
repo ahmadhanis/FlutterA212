@@ -9,6 +9,7 @@ import '../constants.dart';
 import '../models/product.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_cropper/image_cropper.dart';
+import 'package:sn_progress_dialog/sn_progress_dialog.dart';
 
 class UpdateProductScreen extends StatefulWidget {
   final Product product;
@@ -36,17 +37,26 @@ class _UpdateProductScreenState extends State<UpdateProductScreen> {
   final _formKey = GlobalKey<FormState>();
   String dropdownvalue = 'Beverage';
   var types = [
+    'Baby',
     'Beverage',
     'Bread',
+    'Breakfast',
     'Canned Food',
     'Condiment',
     'Care Product',
     'Dairy',
     'Dried Food',
+    'Grains',
+    'Frozen',
     'Snack',
+    'Health',
     'Meat',
+    'Miscellaneous',
+    'Seafood',
+    'Pet',
     'Produce',
     'Household',
+    'Vegetables',
   ];
 
   @override
@@ -406,6 +416,8 @@ class _UpdateProductScreenState extends State<UpdateProductScreen> {
   }
 
   void _updateProduct() {
+     ProgressDialog pd = ProgressDialog(context: context);
+    pd.show(msg: 'Updating..', max: 100);
     String base64Image;
     String _prname = _prnameEditingController.text;
     String _prdesc = _prdescEditingController.text;
@@ -439,14 +451,19 @@ class _UpdateProductScreenState extends State<UpdateProductScreen> {
             gravity: ToastGravity.BOTTOM,
             timeInSecForIosWeb: 1,
             fontSize: 16.0);
+             pd.update(value: 100, msg: "Completed");
+        pd.close();
         Navigator.of(context).pop();
       } else {
+         pd.update(value: 100, msg: "Failed");
+        pd.close();
         Fluttertoast.showToast(
             msg: data['status'],
             toastLength: Toast.LENGTH_SHORT,
             gravity: ToastGravity.BOTTOM,
             timeInSecForIosWeb: 1,
             fontSize: 16.0);
+            
       }
     });
   }

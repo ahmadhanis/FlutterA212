@@ -3,12 +3,13 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
-import 'package:slumshop_admin/constants.dart';
-import 'package:slumshop_admin/views/mainscreen.dart';
+
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sn_progress_dialog/sn_progress_dialog.dart';
 
-import '../models/admin.dart';
+import '../constants.dart';
+import '../models/customer.dart';
+import 'mainscreen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -209,20 +210,11 @@ class _LoginScreenState extends State<LoginScreen> {
       ProgressDialog pd = ProgressDialog(context: context);
       pd.show(msg: 'Logging in..', max: 100);
       http.post(
-          Uri.parse(CONSTANTS.server + "/slumshop/mobile/php/login_user.php"),
+          Uri.parse(CONSTANTS.server + "/slumshop/mobile/php/cust_login.php"),
           body: {"email": _email, "password": _password}).then((response) {
         print(response.body);
         var data = jsonDecode(response.body);
         if (response.statusCode == 200 && data['status'] == 'success') {
-          Admin admin = Admin.fromJson(data['data']);
-          // String name = data['data']['name'];
-          // String email = data['data']['email'];
-          // String id = data['data']['id'];
-          // String datereg = data['data']['datereg'];
-          // String role = data['data']['role'];
-          // Admin admin = Admin(
-          //     name: name, email: email, id: id, role: role, datereg: datereg);
-
           Fluttertoast.showToast(
               msg: "Success",
               toastLength: Toast.LENGTH_SHORT,
@@ -231,11 +223,14 @@ class _LoginScreenState extends State<LoginScreen> {
               fontSize: 16.0);
           pd.update(value: 100, msg: "Completed");
           pd.close();
+          var extractdata = data['data'];
+          Customer customer = Customer.fromJson(extractdata);
+          print(customer.email);
           Navigator.pushReplacement(
               context,
               MaterialPageRoute(
                   builder: (content) => MainScreen(
-                        admin: admin,
+                        customer: customer,
                       )));
         } else {
           Fluttertoast.showToast(
