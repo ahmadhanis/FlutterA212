@@ -8,6 +8,7 @@ class Customer {
   String? credit;
   String? otp;
   String? datereg;
+  String? cart;
 
   Customer(
       {this.id,
@@ -18,7 +19,8 @@ class Customer {
       this.address,
       this.credit,
       this.otp,
-      this.datereg});
+      this.datereg,
+      this.cart});
 
   Customer.fromJson(Map<String, dynamic> json) {
     id = json['id'];
@@ -30,6 +32,7 @@ class Customer {
     credit = json['credit'];
     otp = json['otp'];
     datereg = json['datereg'];
+    cart = json['cart'].toString();
   }
 
   Map<String, dynamic> toJson() {
@@ -43,6 +46,7 @@ class Customer {
     data['credit'] = credit;
     data['otp'] = otp;
     data['datereg'] = datereg;
+    data['cart'] = cart.toString();
     return data;
   }
 }

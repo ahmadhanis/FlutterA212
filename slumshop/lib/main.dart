@@ -40,7 +40,11 @@ class _MySplashScreenState extends State<MySplashScreen> {
   void initState() {
     super.initState();
     Customer customer = Customer(
-        id: '0', name: 'guest', email: 'guest@slumberjer.com', datereg: '0');
+        id: '0',
+        name: 'guest',
+        email: 'guest@slumberjer.com',
+        datereg: '0',
+        cart: '0');
 
     Timer(
         const Duration(seconds: 3),

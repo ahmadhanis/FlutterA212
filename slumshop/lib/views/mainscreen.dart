@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:slumshop/views/cartscreen.dart';
+import 'package:slumshop/views/loginscreen.dart';
 import 'package:slumshop/views/registrationscreen.dart';
 import '../constants.dart';
 import '../models/customer.dart';
@@ -13,7 +15,7 @@ class MainScreen extends StatefulWidget {
   final Customer customer;
   const MainScreen({
     Key? key,
-     required this.customer,
+    required this.customer,
   }) : super(key: key);
 
   @override
@@ -26,11 +28,14 @@ class _MainScreenState extends State<MainScreen> {
   late double screenHeight, screenWidth, resWidth;
   final df = DateFormat('dd/MM/yyyy hh:mm a');
   var numofpage, curpage = 1;
+  //int numofitem = 0;
   var color;
+  int cart = 0;
   TextEditingController searchController = TextEditingController();
   String search = "";
   String dropdownvalue = 'Beverage';
   var types = [
+    'All',
     'Baby',
     'Beverage',
     'Bread',
@@ -56,7 +61,7 @@ class _MainScreenState extends State<MainScreen> {
   @override
   void initState() {
     super.initState();
-    _loadProducts(1, search);
+    _loadProducts(1, search, "All");
   }
 
   @override
@@ -79,7 +84,29 @@ class _MainScreenState extends State<MainScreen> {
             onPressed: () {
               _loadSearchDialog();
             },
-          )
+          ),
+          TextButton.icon(
+            onPressed: () async {
+              if (widget.customer.email == "guest@slumberjer.com") {
+                _loadOptions();
+              } else {
+                await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (content) => CartScreen(
+                              customer: widget.customer,
+                            )));
+                _loadProducts(1, search, "All");
+                _loadMyCart();
+              }
+            },
+            icon: const Icon(
+              Icons.shopping_cart,
+              color: Colors.white,
+            ),
+            label: Text(widget.customer.cart.toString(),
+                style: const TextStyle(color: Colors.white)),
+          ),
         ],
       ),
       drawer: Drawer(
@@ -130,16 +157,55 @@ class _MainScreenState extends State<MainScreen> {
         ),
       ),
       body: productList.isEmpty
-          ? Center(
-              child: Text(titlecenter,
-                  style: const TextStyle(
-                      fontSize: 22, fontWeight: FontWeight.bold)))
+          ? Padding(
+              padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
+              child: Column(
+                children: [
+                  Center(
+                      child: Text(titlecenter,
+                          style: const TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold))),
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: types.map((String char) {
+                        return Padding(
+                          padding: const EdgeInsets.fromLTRB(2, 0, 2, 0),
+                          child: ElevatedButton(
+                            child: Text(char),
+                            onPressed: () {
+                              _loadProducts(1, "", char);
+                            },
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                ],
+              ),
+            )
           : Column(children: [
-              const Padding(
-                padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
-                child: Text("Products Available",
-                    style:
-                        TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
+                child: Text(titlecenter,
+                    style: const TextStyle(
+                        fontSize: 18, fontWeight: FontWeight.bold)),
+              ),
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: types.map((String char) {
+                    return Padding(
+                      padding: const EdgeInsets.fromLTRB(2, 0, 2, 0),
+                      child: ElevatedButton(
+                        child: Text(char),
+                        onPressed: () {
+                          _loadProducts(1, "", char);
+                        },
+                      ),
+                    );
+                  }).toList(),
+                ),
               ),
               Expanded(
                   child: GridView.count(
@@ -167,30 +233,42 @@ class _MainScreenState extends State<MainScreen> {
                                       const Icon(Icons.error),
                                 ),
                               ),
+                              Text(
+                                productList[index].productName.toString(),
+                                style: const TextStyle(
+                                    fontSize: 20, fontWeight: FontWeight.bold),
+                              ),
                               Flexible(
                                   flex: 4,
                                   child: Column(
                                     children: [
-                                      Text(
-                                        productList[index]
-                                            .productName
-                                            .toString(),
-                                        style: const TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold),
+                                      Row(
+                                        children: [
+                                          Expanded(
+                                            flex: 7,
+                                            child: Column(children: [
+                                              Text("RM " +
+                                                  double.parse(
+                                                          productList[index]
+                                                              .productPrice
+                                                              .toString())
+                                                      .toStringAsFixed(2)),
+                                              Text(productList[index]
+                                                      .productQty
+                                                      .toString() +
+                                                  " units"),
+                                            ]),
+                                          ),
+                                          Expanded(
+                                              flex: 3,
+                                              child: IconButton(
+                                                  onPressed: () {
+                                                    _addtocartDialog(index);
+                                                  },
+                                                  icon: const Icon(
+                                                      Icons.shopping_cart))),
+                                        ],
                                       ),
-                                      Text("RM " +
-                                          double.parse(productList[index]
-                                                  .productPrice
-                                                  .toString())
-                                              .toStringAsFixed(2)),
-                                      Text(productList[index]
-                                              .productQty
-                                              .toString() +
-                                          " units"),
-                                      Text(productList[index]
-                                          .productStatus
-                                          .toString()),
                                     ],
                                   ))
                             ],
@@ -212,7 +290,8 @@ class _MainScreenState extends State<MainScreen> {
                     return SizedBox(
                       width: 40,
                       child: TextButton(
-                          onPressed: () => {_loadProducts(index + 1, "")},
+                          onPressed: () =>
+                              {_loadProducts(index + 1, "", "All")},
                           child: Text(
                             (index + 1).toString(),
                             style: TextStyle(color: color),
@@ -243,7 +322,7 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
-  void _loadProducts(int pageno, String _search) {
+  void _loadProducts(int pageno, String _search, String _type) {
     curpage = pageno;
     numofpage ?? 1;
     http.post(
@@ -251,6 +330,7 @@ class _MainScreenState extends State<MainScreen> {
         body: {
           'pageno': pageno.toString(),
           'search': _search,
+          'type': _type,
         }).timeout(
       const Duration(seconds: 5),
       onTimeout: () {
@@ -259,25 +339,51 @@ class _MainScreenState extends State<MainScreen> {
       },
     ).then((response) {
       var jsondata = jsonDecode(response.body);
-
       print(jsondata);
       if (response.statusCode == 200 && jsondata['status'] == 'success') {
         var extractdata = jsondata['data'];
         numofpage = int.parse(jsondata['numofpage']);
-
         if (extractdata['products'] != null) {
           productList = <Product>[];
           extractdata['products'].forEach((v) {
             productList.add(Product.fromJson(v));
           });
+          titlecenter = productList.length.toString() + " Products Available";
         } else {
           titlecenter = "No Product Available";
+          productList.clear();
         }
         setState(() {});
       } else {
         //do something
+        titlecenter = "No Product Available";
+        productList.clear();
+        setState(() {});
       }
     });
+  }
+
+  _loadOptions() {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(20.0))),
+            title: const Text(
+              "Please select",
+              style: TextStyle(),
+            ),
+            content: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                ElevatedButton(onPressed: _onLogin, child: const Text("Login")),
+                ElevatedButton(
+                    onPressed: _onRegister, child: const Text("Register")),
+              ],
+            ),
+          );
+        });
   }
 
   _loadProductDetails(int index) {
@@ -325,25 +431,23 @@ class _MainScreenState extends State<MainScreen> {
                       df.format(DateTime.parse(
                           productList[index].productDate.toString()))),
                 ]),
-                ElevatedButton(onPressed: _addtocartDialog, child: Text("Add to cart"))
               ],
             )),
             actions: [
-              TextButton(
-                child: const Text(
-                  "Close",
-                  style: TextStyle(),
-                ),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              ),
+              SizedBox(
+                  width: screenWidth / 1,
+                  child: ElevatedButton(
+                      onPressed: () {
+                        _addtocartDialog(index);
+                      },
+                      child: const Text("Add to cart"))),
             ],
           );
         });
   }
 
   void _loadSearchDialog() {
+    searchController.text = "";
     showDialog(
         context: context,
         builder: (BuildContext context) {
@@ -355,8 +459,9 @@ class _MainScreenState extends State<MainScreen> {
                   "Search ",
                 ),
                 content: SizedBox(
-                  height: screenHeight / 3,
+                  //height: screenHeight / 4,
                   child: Column(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       TextField(
                         controller: searchController,
@@ -391,42 +496,96 @@ class _MainScreenState extends State<MainScreen> {
                           },
                         ),
                       ),
-                      ElevatedButton(
-                        onPressed: () {
-                          search = searchController.text;
-                          Navigator.of(context).pop();
-                          _loadProducts(1, search);
-                        },
-                        child: const Text("Search"),
-                      )
                     ],
                   ),
                 ),
+                actions: [
+                  ElevatedButton(
+                    onPressed: () {
+                      search = searchController.text;
+                      Navigator.of(context).pop();
+                      _loadProducts(1, search, "All");
+                    },
+                    child: const Text("Search"),
+                  )
+                ],
               );
             },
           );
         });
   }
 
-  _addtocartDialog() {
-
+  _addtocartDialog(int index) {
     if (widget.customer.email == "guest@slumberjer.com") {
-      Navigator.of(context).pop();
-      Fluttertoast.showToast(
-          msg: "Please register an account",
-          toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.BOTTOM,
-          timeInSecForIosWeb: 1,
-          fontSize: 16.0);
-      Navigator.push(
-          context, MaterialPageRoute(builder: (content) => const RegistrationScreen()));
-    }else{
-      Fluttertoast.showToast(
-          msg: "Added to cart success",
-          toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.BOTTOM,
-          timeInSecForIosWeb: 1,
-          fontSize: 16.0);
+      _loadOptions();
+    } else {
+      _addtoCart(index);
     }
+  }
+
+  void _onLogin() {
+    Navigator.push(
+        context, MaterialPageRoute(builder: (content) => const LoginScreen()));
+  }
+
+  void _onRegister() {
+    Navigator.push(context,
+        MaterialPageRoute(builder: (content) => const RegistrationScreen()));
+  }
+
+  void _loadMyCart() {
+    if (widget.customer.email != "guest@slumberjer.com") {
+      http.post(
+          Uri.parse(
+              CONSTANTS.server + "/slumshop/mobile/php/load_mycartqty.php"),
+          body: {
+            "email": widget.customer.email.toString(),
+          }).timeout(
+        const Duration(seconds: 5),
+        onTimeout: () {
+          return http.Response(
+              'Error', 408); // Request Timeout response status code
+        },
+      ).then((response) {
+        print(response.body);
+        var jsondata = jsonDecode(response.body);
+        if (response.statusCode == 200 && jsondata['status'] == 'success') {
+          print(jsondata['data']['carttotal'].toString());
+          setState(() {
+            widget.customer.cart = jsondata['data']['carttotal'].toString();
+          });
+        }
+      });
+    }
+  }
+
+  void _addtoCart(int index) {
+    http.post(
+        Uri.parse(CONSTANTS.server + "/slumshop/mobile/php/insert_cart.php"),
+        body: {
+          "email": widget.customer.email.toString(),
+          "prid": productList[index].productId.toString(),
+        }).timeout(
+      const Duration(seconds: 5),
+      onTimeout: () {
+        return http.Response(
+            'Error', 408); // Request Timeout response status code
+      },
+    ).then((response) {
+      print(response.body);
+      var jsondata = jsonDecode(response.body);
+      if (response.statusCode == 200 && jsondata['status'] == 'success') {
+        print(jsondata['data']['carttotal'].toString());
+        setState(() {
+          widget.customer.cart = jsondata['data']['carttotal'].toString();
+        });
+        Fluttertoast.showToast(
+            msg: "Success",
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.BOTTOM,
+            timeInSecForIosWeb: 1,
+            fontSize: 16.0);
+      }
+    });
   }
 }
