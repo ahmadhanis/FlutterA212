@@ -29,10 +29,12 @@ class _ProductScreenState extends State<ProductScreen> {
   var _tapPosition;
   var numofpage, curpage = 1;
   var color;
+
   TextEditingController searchController = TextEditingController();
   String search = "";
   String dropdownvalue = 'Beverage';
-   var types = [
+  var types = [
+    'All',
     'Baby',
     'Beverage',
     'Bread',
@@ -58,7 +60,7 @@ class _ProductScreenState extends State<ProductScreen> {
   @override
   void initState() {
     super.initState();
-    _loadProducts(1, search);
+    _loadProducts(1, search, "All");
   }
 
   @override
@@ -150,16 +152,55 @@ class _ProductScreenState extends State<ProductScreen> {
         ),
       ),
       body: productList.isEmpty
-          ? Center(
-              child: Text(titlecenter,
-                  style: const TextStyle(
-                      fontSize: 22, fontWeight: FontWeight.bold)))
+          ? Padding(
+              padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
+              child: Column(
+                children: [
+                  Center(
+                      child: Text(titlecenter,
+                          style: const TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold))),
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: types.map((String char) {
+                        return Padding(
+                          padding: const EdgeInsets.fromLTRB(2, 0, 2, 0),
+                          child: ElevatedButton(
+                            child: Text(char),
+                            onPressed: () {
+                              _loadProducts(1, "", char);
+                            },
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                ],
+              ),
+            )
           : Column(children: [
-              const Padding(
-                padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
-                child: Text("Products Available",
-                    style:
-                        TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
+                child: Text(titlecenter,
+                    style: const TextStyle(
+                        fontSize: 18, fontWeight: FontWeight.bold)),
+              ),
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: types.map((String char) {
+                    return Padding(
+                      padding: const EdgeInsets.fromLTRB(2, 0, 2, 0),
+                      child: ElevatedButton(
+                        child: Text(char),
+                        onPressed: () {
+                          _loadProducts(1, "", char);
+                        },
+                      ),
+                    );
+                  }).toList(),
+                ),
               ),
               Expanded(
                   child: GridView.count(
@@ -236,7 +277,8 @@ class _ProductScreenState extends State<ProductScreen> {
                     return SizedBox(
                       width: 40,
                       child: TextButton(
-                          onPressed: () => {_loadProducts(index + 1, "")},
+                          onPressed: () =>
+                              {_loadProducts(index + 1, "", "All")},
                           child: Text(
                             (index + 1).toString(),
                             style: TextStyle(color: color),
@@ -252,7 +294,7 @@ class _ProductScreenState extends State<ProductScreen> {
         onPressed: () async {
           await Navigator.push(context,
               MaterialPageRoute(builder: (content) => const NewProduct()));
-          _loadProducts(1, '');
+          _loadProducts(1, '', "All");
         },
       ),
     );
@@ -276,7 +318,7 @@ class _ProductScreenState extends State<ProductScreen> {
     );
   }
 
-  void _loadProducts(int pageno, String _search) {
+  void _loadProducts(int pageno, String _search, String _type) {
     curpage = pageno;
     numofpage ?? 1;
     http.post(
@@ -284,6 +326,7 @@ class _ProductScreenState extends State<ProductScreen> {
         body: {
           'pageno': pageno.toString(),
           'search': _search,
+          'type': _type,
         }).timeout(
       const Duration(seconds: 5),
       onTimeout: () {
@@ -303,12 +346,17 @@ class _ProductScreenState extends State<ProductScreen> {
           extractdata['products'].forEach((v) {
             productList.add(Product.fromJson(v));
           });
+          titlecenter = productList.length.toString() + " Products Available";
         } else {
           titlecenter = "No Product Available";
+          productList.clear();
         }
         setState(() {});
-      }else{
+      } else {
         //do something
+        titlecenter = "No Product Available";
+        productList.clear();
+        setState(() {});
       }
     });
   }
@@ -395,7 +443,7 @@ class _ProductScreenState extends State<ProductScreen> {
                         builder: (content) => UpdateProductScreen(
                               product: productList[index],
                             )));
-                _loadProducts(1, search);
+                _loadProducts(1, search, "All");
               },
               child: const Text(
                 "Update Product",
@@ -474,7 +522,7 @@ class _ProductScreenState extends State<ProductScreen> {
             gravity: ToastGravity.BOTTOM,
             timeInSecForIosWeb: 1,
             fontSize: 16.0);
-        _loadProducts(1, "");
+        _loadProducts(1, "", "All");
       } else {
         Fluttertoast.showToast(
             msg: "Failed",
@@ -498,8 +546,9 @@ class _ProductScreenState extends State<ProductScreen> {
                   "Search ",
                 ),
                 content: SizedBox(
-                  height: screenHeight / 3,
+                  //height: screenHeight / 3,
                   child: Column(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       TextField(
                         controller: searchController,
@@ -534,17 +583,19 @@ class _ProductScreenState extends State<ProductScreen> {
                           },
                         ),
                       ),
-                      ElevatedButton(
-                        onPressed: () {
-                          search = searchController.text;
-                          Navigator.of(context).pop();
-                          _loadProducts(1, search);
-                        },
-                        child: const Text("Search"),
-                      )
                     ],
                   ),
                 ),
+                actions: [
+                  ElevatedButton(
+                    onPressed: () {
+                      search = searchController.text;
+                      Navigator.of(context).pop();
+                      _loadProducts(1, search, "All");
+                    },
+                    child: const Text("Search"),
+                  )
+                ],
               );
             },
           );

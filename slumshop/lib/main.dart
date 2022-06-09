@@ -22,7 +22,7 @@ class MyApp extends StatelessWidget {
               .textTheme, // If this is not set, then ThemeData.light().textTheme is used.
         ),
       ),
-      home: const MySplashScreen(title: 'SlumShop Admin'),
+      home: const MySplashScreen(title: 'SlumShop'),
     );
   }
 }
@@ -69,14 +69,6 @@ class _MySplashScreenState extends State<MySplashScreen> {
               Padding(
                 padding: const EdgeInsets.all(64.0),
                 child: Image.asset('assets/images/1.png'),
-              ),
-              const Text(
-                "SlumShop (Admin)",
-                style: TextStyle(
-                  fontSize: 40,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
               ),
               const CircularProgressIndicator(),
               const Text("Version 0.1",

@@ -4,6 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
+import 'package:slumshop/views/paymentscreen.dart';
 import '../constants.dart';
 import '../models/customer.dart';
 import '../models/cart.dart';
@@ -22,6 +23,7 @@ class _CartScreenState extends State<CartScreen> {
   String titlecenter = "Loading...";
   late double screenHeight, screenWidth, resWidth;
   double totalpayable = 0.0;
+  
   @override
   void initState() {
     super.initState();
@@ -44,15 +46,14 @@ class _CartScreenState extends State<CartScreen> {
           title: const Text('My Cart'),
         ),
         body: cartList.isEmpty
-            ? Padding(
-                padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
-                child: Column(
-                  children: [
-                    Text(titlecenter,
-                        style: const TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold)),
-                  ],
-                ))
+            ? Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(8),
+                  child: Text(titlecenter,
+                      style: const TextStyle(
+                          fontSize: 18, fontWeight: FontWeight.bold)),
+                ),
+              )
             : Padding(
                 padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
                 child: Column(
@@ -174,6 +175,13 @@ class _CartScreenState extends State<CartScreen> {
         return http.Response(
             'Error', 408); // Request Timeout response status code
       },
+    ).timeout(
+      const Duration(seconds: 5),
+      onTimeout: () {
+        titlecenter = "Timeout Please retry again later";
+        return http.Response(
+            'Error', 408); // Request Timeout response status code
+      },
     ).then((response) {
       var jsondata = jsonDecode(response.body);
       if (response.statusCode == 200 && jsondata['status'] == 'success') {
@@ -194,14 +202,56 @@ class _CartScreenState extends State<CartScreen> {
           setState(() {});
         }
       } else {
-        titlecenter = "Cart is empty";
+        titlecenter = "Your Cart is Empty 😞 ";
         cartList.clear();
         setState(() {});
       }
     });
   }
 
-  void _onPaynowDialog() {}
+  void _onPaynowDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(20.0))),
+          title: const Text(
+            "Pay Now",
+            style: TextStyle(),
+          ),
+          content: const Text("Are you sure?", style: TextStyle()),
+          actions: <Widget>[
+            TextButton(
+              child: const Text(
+                "Yes",
+                style: TextStyle(),
+              ),
+              onPressed: () async {
+                Navigator.of(context).pop();
+                await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (content) => PaymentScreen(
+                            customer: widget.customer,
+                            totalpayable: totalpayable)));
+                _loadCart();
+              },
+            ),
+            TextButton(
+              child: const Text(
+                "No",
+                style: TextStyle(),
+              ),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   void _deleteItem(int index) {
     http.post(
@@ -269,5 +319,23 @@ class _CartScreenState extends State<CartScreen> {
             fontSize: 16.0);
       }
     });
+  }
+
+  Widget _createDrawerItem(
+      {required IconData icon,
+      required String text,
+      required GestureTapCallback onTap}) {
+    return ListTile(
+      title: Row(
+        children: <Widget>[
+          Icon(icon),
+          Padding(
+            padding: const EdgeInsets.only(left: 8.0),
+            child: Text(text),
+          )
+        ],
+      ),
+      onTap: onTap,
+    );
   }
 }

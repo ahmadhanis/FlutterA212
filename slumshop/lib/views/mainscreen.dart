@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:slumshop/views/cartscreen.dart';
 import 'package:slumshop/views/loginscreen.dart';
 import 'package:slumshop/views/registrationscreen.dart';
+import 'package:sn_progress_dialog/sn_progress_dialog.dart';
 import '../constants.dart';
 import '../models/customer.dart';
 import '../models/product.dart';
@@ -61,7 +62,9 @@ class _MainScreenState extends State<MainScreen> {
   @override
   void initState() {
     super.initState();
-    _loadProducts(1, search, "All");
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      _loadProducts(1, search, "All");
+    });
   }
 
   @override
@@ -136,7 +139,16 @@ class _MainScreenState extends State<MainScreen> {
             _createDrawerItem(
               icon: Icons.local_shipping_outlined,
               text: 'My Cart',
-              onTap: () {},
+              onTap: () async {
+                await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (content) => CartScreen(
+                              customer: widget.customer,
+                            )));
+                _loadProducts(1, search, "All");
+                _loadMyCart();
+              },
             ),
             _createDrawerItem(
               icon: Icons.supervised_user_circle,
@@ -325,6 +337,8 @@ class _MainScreenState extends State<MainScreen> {
   void _loadProducts(int pageno, String _search, String _type) {
     curpage = pageno;
     numofpage ?? 1;
+    ProgressDialog pd = ProgressDialog(context: context);
+    pd.show(msg: 'Loading...', max: 100);
     http.post(
         Uri.parse(CONSTANTS.server + "/slumshop/mobile/php/load_products.php"),
         body: {
@@ -337,9 +351,17 @@ class _MainScreenState extends State<MainScreen> {
         return http.Response(
             'Error', 408); // Request Timeout response status code
       },
+    ).timeout(
+      const Duration(seconds: 5),
+      onTimeout: () {
+        titlecenter = "Timeout Please retry again later";
+        return http.Response(
+            'Error', 408); // Request Timeout response status code
+      },
     ).then((response) {
+      print(response.body);
       var jsondata = jsonDecode(response.body);
-      print(jsondata);
+      
       if (response.statusCode == 200 && jsondata['status'] == 'success') {
         var extractdata = jsondata['data'];
         numofpage = int.parse(jsondata['numofpage']);
@@ -361,6 +383,7 @@ class _MainScreenState extends State<MainScreen> {
         setState(() {});
       }
     });
+    pd.close();
   }
 
   _loadOptions() {
