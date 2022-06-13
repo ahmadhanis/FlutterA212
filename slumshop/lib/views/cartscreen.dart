@@ -23,7 +23,7 @@ class _CartScreenState extends State<CartScreen> {
   String titlecenter = "Loading...";
   late double screenHeight, screenWidth, resWidth;
   double totalpayable = 0.0;
-  
+
   @override
   void initState() {
     super.initState();
@@ -319,23 +319,5 @@ class _CartScreenState extends State<CartScreen> {
             fontSize: 16.0);
       }
     });
-  }
-
-  Widget _createDrawerItem(
-      {required IconData icon,
-      required String text,
-      required GestureTapCallback onTap}) {
-    return ListTile(
-      title: Row(
-        children: <Widget>[
-          Icon(icon),
-          Padding(
-            padding: const EdgeInsets.only(left: 8.0),
-            child: Text(text),
-          )
-        ],
-      ),
-      onTap: onTap,
-    );
   }
 }

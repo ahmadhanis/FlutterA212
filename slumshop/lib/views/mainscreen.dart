@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:slumshop/views/cartscreen.dart';
 import 'package:slumshop/views/loginscreen.dart';
+import 'package:slumshop/views/orderscreen.dart';
 import 'package:slumshop/views/registrationscreen.dart';
 import 'package:sn_progress_dialog/sn_progress_dialog.dart';
 import '../constants.dart';
@@ -140,6 +141,7 @@ class _MainScreenState extends State<MainScreen> {
               icon: Icons.local_shipping_outlined,
               text: 'My Cart',
               onTap: () async {
+                Navigator.pop(context);
                 await Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -153,7 +155,17 @@ class _MainScreenState extends State<MainScreen> {
             _createDrawerItem(
               icon: Icons.supervised_user_circle,
               text: 'My Orders',
-              onTap: () {},
+              onTap: () async {
+                Navigator.pop(context);
+                await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (content) => OrderScreen(
+                              customer: widget.customer,
+                            )));
+                _loadProducts(1, search, "All");
+                _loadMyCart();
+              },
             ),
             _createDrawerItem(
               icon: Icons.verified_user,
@@ -361,7 +373,7 @@ class _MainScreenState extends State<MainScreen> {
     ).then((response) {
       print(response.body);
       var jsondata = jsonDecode(response.body);
-      
+
       if (response.statusCode == 200 && jsondata['status'] == 'success') {
         var extractdata = jsondata['data'];
         numofpage = int.parse(jsondata['numofpage']);
