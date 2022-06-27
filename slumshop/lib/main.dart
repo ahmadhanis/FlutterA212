@@ -18,9 +18,11 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'SlumShop User',
       theme: ThemeData(
-        primarySwatch: Colors.red,
+        primarySwatch: Colors.green,
+        brightness: Brightness.light,
         textTheme: GoogleFonts.latoTextTheme(
           Theme.of(context)
               .textTheme, // If this is not set, then ThemeData.light().textTheme is used.
@@ -92,6 +94,7 @@ class _MySplashScreenState extends State<MySplashScreen> {
       });
       _loginUser(email, password);
     } else {
+      _loginUser(email, password);
       setState(() {
         status = "Login as guest...";
       });

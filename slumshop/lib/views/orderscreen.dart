@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -88,11 +87,11 @@ class _OrderScreenState extends State<OrderScreen> {
                                             0: FlexColumnWidth(4),
                                             1: FlexColumnWidth(6),
                                           },
-                                          border: const TableBorder(
-                                              verticalInside: BorderSide(
-                                                  width: 1,
-                                                  color: Colors.blue,
-                                                  style: BorderStyle.solid)),
+                                          // border: const TableBorder(
+                                          //     verticalInside: BorderSide(
+                                          //         width: 1,
+                                          //         color: Colors.blue,
+                                          //         style: BorderStyle.solid)),
                                           children: [
                                             TableRow(children: [
                                               const TableCell(
@@ -103,15 +102,11 @@ class _OrderScreenState extends State<OrderScreen> {
                                                           FontWeight.bold),
                                                 ),
                                               ),
-                                              Padding(
-                                                padding: const EdgeInsets.only(
-                                                    left: 4),
-                                                child: TableCell(
-                                                  child: Text(
-                                                    orderList[index]
-                                                        .orderId
-                                                        .toString(),
-                                                  ),
+                                              TableCell(
+                                                child: Text(
+                                                  orderList[index]
+                                                      .orderId
+                                                      .toString(),
                                                 ),
                                               )
                                             ]),
@@ -124,15 +119,11 @@ class _OrderScreenState extends State<OrderScreen> {
                                                           FontWeight.bold),
                                                 ),
                                               ),
-                                              Padding(
-                                                padding: const EdgeInsets.only(
-                                                    left: 4),
-                                                child: TableCell(
-                                                  child: Text(
-                                                    orderList[index]
-                                                        .receiptId
-                                                        .toString(),
-                                                  ),
+                                              TableCell(
+                                                child: Text(
+                                                  orderList[index]
+                                                      .receiptId
+                                                      .toString(),
                                                 ),
                                               )
                                             ]),
@@ -145,16 +136,12 @@ class _OrderScreenState extends State<OrderScreen> {
                                                           FontWeight.bold),
                                                 ),
                                               ),
-                                              Padding(
-                                                padding: const EdgeInsets.only(
-                                                    left: 4),
-                                                child: TableCell(
-                                                  child: Text(
-                                                    "RM " +
-                                                        orderList[index]
-                                                            .orderPaid
-                                                            .toString(),
-                                                  ),
+                                              TableCell(
+                                                child: Text(
+                                                  "RM " +
+                                                      orderList[index]
+                                                          .orderPaid
+                                                          .toString(),
                                                 ),
                                               )
                                             ]),
@@ -167,14 +154,11 @@ class _OrderScreenState extends State<OrderScreen> {
                                                           FontWeight.bold),
                                                 ),
                                               ),
-                                              Padding(
-                                                padding: const EdgeInsets.only(left:4),
-                                                child: TableCell(
-                                                  child: Text(
-                                                    orderList[index]
-                                                        .orderStatus
-                                                        .toString(),
-                                                  ),
+                                              TableCell(
+                                                child: Text(
+                                                  orderList[index]
+                                                      .orderStatus
+                                                      .toString(),
                                                 ),
                                               )
                                             ]),
@@ -187,15 +171,12 @@ class _OrderScreenState extends State<OrderScreen> {
                                                           FontWeight.bold),
                                                 ),
                                               ),
-                                              Padding(
-                                                padding: const EdgeInsets.only(left:4),
-                                                child: TableCell(
-                                                  child: Text(
-                                                    df.format(DateTime.parse(
-                                                        orderList[index]
-                                                            .orderDate
-                                                            .toString())),
-                                                  ),
+                                              TableCell(
+                                                child: Text(
+                                                  df.format(DateTime.parse(
+                                                      orderList[index]
+                                                          .orderDate
+                                                          .toString())),
                                                 ),
                                               )
                                             ]),
@@ -308,8 +289,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                             .toString())
                                         .toStringAsFixed(2),
                                 style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold),
+                                    fontSize: 16, fontWeight: FontWeight.bold),
                               ),
                             ]),
                           ]),

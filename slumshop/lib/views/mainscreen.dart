@@ -13,6 +13,8 @@ import '../models/product.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
+import 'profilescreen.dart';
+
 class MainScreen extends StatefulWidget {
   final Customer customer;
   const MainScreen({
@@ -30,12 +32,14 @@ class _MainScreenState extends State<MainScreen> {
   late double screenHeight, screenWidth, resWidth;
   final df = DateFormat('dd/MM/yyyy hh:mm a');
   var numofpage, curpage = 1;
+  var _image;
   //int numofitem = 0;
   var color;
   int cart = 0;
   TextEditingController searchController = TextEditingController();
   String search = "";
   String dropdownvalue = 'Beverage';
+  int rowcount = 2;
   var types = [
     'All',
     'Baby',
@@ -59,7 +63,8 @@ class _MainScreenState extends State<MainScreen> {
     'Household',
     'Vegetables',
   ];
-
+  GlobalKey<RefreshIndicatorState> refreshKey =
+      GlobalKey<RefreshIndicatorState>();
   @override
   void initState() {
     super.initState();
@@ -74,10 +79,10 @@ class _MainScreenState extends State<MainScreen> {
     screenWidth = MediaQuery.of(context).size.width;
     if (screenWidth <= 600) {
       resWidth = screenWidth;
-      //rowcount = 2;
+      rowcount = 2;
     } else {
       resWidth = screenWidth * 0.75;
-      //rowcount = 3;
+      rowcount = 3;
     }
     return Scaffold(
       appBar: AppBar(
@@ -119,9 +124,14 @@ class _MainScreenState extends State<MainScreen> {
             UserAccountsDrawerHeader(
               accountName: Text(widget.customer.name.toString()),
               accountEmail: Text(widget.customer.email.toString()),
-              currentAccountPicture: const CircleAvatar(
-                backgroundImage: NetworkImage(
-                    "https://cdn.myanimelist.net/r/360x360/images/characters/9/310307.jpg?s=56335bffa6f5da78c3824ba0dae14a26"),
+              currentAccountPicture: ClipOval(
+                child: Image.network(
+                  CONSTANTS.server +
+                      '/slumshop/assets/customers/${widget.customer.email}.jpg',
+                  errorBuilder: (context, error, stackTrace) {
+                    return const Icon(Icons.broken_image, size: 128);
+                  },
+                ),
               ),
             ),
             _createDrawerItem(
@@ -170,7 +180,25 @@ class _MainScreenState extends State<MainScreen> {
             _createDrawerItem(
               icon: Icons.verified_user,
               text: 'My Profile',
-              onTap: () {},
+              onTap: () async {
+                Navigator.pop(context);
+                if (widget.customer.email == "guest@slumberjer.com") {
+                  Fluttertoast.showToast(
+                      msg: "Please login/register an account",
+                      toastLength: Toast.LENGTH_SHORT,
+                      gravity: ToastGravity.BOTTOM,
+                      timeInSecForIosWeb: 1,
+                      fontSize: 16.0);
+                  return;
+                }
+
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (content) => ProfileScreen(
+                              customer: widget.customer,
+                            )));
+              },
             ),
             _createDrawerItem(
               icon: Icons.exit_to_app,
@@ -232,73 +260,88 @@ class _MainScreenState extends State<MainScreen> {
                 ),
               ),
               Expanded(
-                  child: GridView.count(
-                      crossAxisCount: 2,
-                      childAspectRatio: (1 / 1),
-                      children: List.generate(productList.length, (index) {
-                        return InkWell(
-                          splashColor: Colors.amber,
-                          onTap: () => {_loadProductDetails(index)},
-                          child: Card(
-                              child: Column(
-                            children: [
-                              Flexible(
+                  child: RefreshIndicator(
+                key: refreshKey,
+                onRefresh: () async {
+                  _loadProducts(1, search, "All");
+                },
+                child: GridView.count(
+                    crossAxisCount: rowcount,
+                    childAspectRatio: (1 / 1),
+                    children: List.generate(productList.length, (index) {
+                      return InkWell(
+                        splashColor: Colors.amber,
+                        onTap: () => {_loadProductDetails(index)},
+                        child: Card(
+                            child: Column(
+                          children: [
+                            Flexible(
                                 flex: 6,
-                                child: CachedNetworkImage(
-                                  imageUrl: CONSTANTS.server +
-                                      "/slumshop/assets/products/" +
-                                      productList[index].productId.toString() +
-                                      '.jpg',
-                                  fit: BoxFit.cover,
-                                  width: resWidth,
-                                  placeholder: (context, url) =>
-                                      const LinearProgressIndicator(),
-                                  errorWidget: (context, url, error) =>
-                                      const Icon(Icons.error),
-                                ),
-                              ),
-                              Text(
-                                productList[index].productName.toString(),
-                                style: const TextStyle(
-                                    fontSize: 20, fontWeight: FontWeight.bold),
-                              ),
-                              Flexible(
-                                  flex: 4,
-                                  child: Column(
-                                    children: [
-                                      Row(
-                                        children: [
-                                          Expanded(
-                                            flex: 7,
-                                            child: Column(children: [
-                                              Text("RM " +
-                                                  double.parse(
-                                                          productList[index]
-                                                              .productPrice
-                                                              .toString())
-                                                      .toStringAsFixed(2)),
-                                              Text(productList[index]
-                                                      .productQty
-                                                      .toString() +
-                                                  " units"),
-                                            ]),
-                                          ),
-                                          Expanded(
-                                              flex: 3,
-                                              child: IconButton(
-                                                  onPressed: () {
-                                                    _addtocartDialog(index);
-                                                  },
-                                                  icon: const Icon(
-                                                      Icons.shopping_cart))),
-                                        ],
-                                      ),
-                                    ],
-                                  ))
-                            ],
-                          )),
-                        );
-                      }))),
+                                child: SizedBox(
+                                    height: screenHeight / 2.5,
+                                    width: screenWidth,
+                                    child: _image == null
+                                        ? CachedNetworkImage(
+                                            imageUrl: CONSTANTS.server +
+                                                "/slumshop/assets/products/" +
+                                                productList[index]
+                                                    .productId
+                                                    .toString() +
+                                                '.jpg',
+                                            fit: BoxFit.cover,
+                                            width: screenWidth,
+                                            placeholder: (context, url) =>
+                                                const LinearProgressIndicator(),
+                                            errorWidget:
+                                                (context, url, error) =>
+                                                    const Icon(Icons.error),
+                                          )
+                                        : Image.file(
+                                            _image,
+                                            fit: BoxFit.cover,
+                                          ))),
+                            Text(
+                              productList[index].productName.toString(),
+                              style: const TextStyle(
+                                  fontSize: 20, fontWeight: FontWeight.bold),
+                            ),
+                            Flexible(
+                                flex: 4,
+                                child: Column(
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          flex: 7,
+                                          child: Column(children: [
+                                            Text("RM " +
+                                                double.parse(productList[index]
+                                                        .productPrice
+                                                        .toString())
+                                                    .toStringAsFixed(2)),
+                                            Text(productList[index]
+                                                    .productQty
+                                                    .toString() +
+                                                " units"),
+                                          ]),
+                                        ),
+                                        Expanded(
+                                            flex: 3,
+                                            child: IconButton(
+                                                onPressed: () {
+                                                  _addtocartDialog(index);
+                                                },
+                                                icon: const Icon(
+                                                    Icons.shopping_cart))),
+                                      ],
+                                    ),
+                                  ],
+                                ))
+                          ],
+                        )),
+                      );
+                    })),
+              )),
               SizedBox(
                 height: 30,
                 child: ListView.builder(
